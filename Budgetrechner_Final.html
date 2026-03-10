@@ -1,274 +1,490 @@
 <!DOCTYPE html>
-<!-- saved from url=(0050)file://hbl.ch/private$/home/tzo/Desktop/index.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Budget Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budgetrechner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
+        :root {
+            --primary: #007aff;
+            --primary-light: #e5f1ff;
+            --bg: #f2f2f7;
+            --card-bg: #ffffff;
+            --text: #1c1c1e;
+            --text-secondary: #636366;
+            --danger: #ff3b30;
+            --success: #34c759;
+            --border: #efeff4;
+            --shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: auto;
-            max-width: 600px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
             padding: 20px;
-			background-color: #fafeff;
+            display: flex;
+            justify-content: center;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
+        .container { width: 100%; max-width: 900px; padding-bottom: 100px; }
+        
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 2rem; font-weight: 800; margin: 0; color: var(--primary); }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
         }
 
-        .section {
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 0.5px solid #ccc;
-            border-radius: 15px;
-			background-color: #f4f7ff;
-        }
-
-        .section h2 {
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-        .input-group {
+        h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0 0 15px 0;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .input-group label {
-            flex: 1;
-            margin-right: 10px;
-        }
-
-        .input-group input,
-        .input-group select {
-            flex: 1;
-            padding: 5px;
-        }
-
-        .checkbox-group {
-            margin-bottom: 15px;
-        }
-
-        .results {
-            font-size: 1.2em;
-            margin-top: 10px;
-        }
-
-        .positive {
-            color: green;
-        }
-
-        .negative {
-            color: red;
-        }
-
-        .add-row {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .add-row:hover {
-            background-color: #0056b3;
-        }
-
-        .costs-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .costs-list li {
-            display: flex;
             align-items: center;
-            margin-bottom: 5px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
         }
 
-        .costs-list li input,
-        .costs-list li select {
-            flex: 1;
-            margin-left: 10px;
+        .storage-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            align-items: center;
         }
 
-        .remove-btn {
-            margin-left: 10px;
-            color: white;
-            background-color: red;
-            border: none;
-            padding: 5px 10px;
+        .storage-bar input, .storage-bar select { flex: 1; min-width: 150px; }
+
+        input, select {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            background: #f9f9fb;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary); background: #fff; }
+
+        .income-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .cost-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .main-row { display: flex; gap: 10px; align-items: center; }
+        .desc-input { flex: 1; font-weight: 500; }
+        .amt-input { width: 100px; text-align: right; font-weight: 600; color: var(--primary); }
+        .freq { width: 110px; font-size: 12px; }
+
+        .btn {
             cursor: pointer;
-            border-radius: 5px;
+            border: none;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: 0.2s;
         }
 
-        .remove-btn:hover {
-            background-color: darkred;
+        .btn-primary { background: var(--primary); color: white; padding: 10px 18px; }
+        .btn-secondary { background: #e9e9eb; color: var(--text); padding: 10px 18px; }
+        .btn-danger { background: #fff1f0; color: var(--danger); padding: 10px 18px; }
+        .btn-icon { width: 36px; height: 36px; background: #f2f2f7; color: var(--text-secondary); }
+        .btn-icon:hover { background: var(--primary-light); color: var(--primary); }
+        .btn-del-sub { background: none; color: #ccc; font-size: 14px; padding: 5px; }
+        .btn-del-sub:hover { color: var(--danger); }
+
+        .sub-container {
+            margin: 10px 0 0 40px;
+            padding-left: 15px;
+            border-left: 2px solid var(--primary-light);
+            display: none;
         }
+        .sub-container.active { display: block; }
+        .sub-row { display: flex; gap: 8px; margin-bottom: 5px; align-items: center; }
+        .sub-desc { font-size: 13px; flex: 1; }
+        .sub-amt { font-size: 13px; width: 80px; color: var(--text-secondary); }
+
+        .summary-bar {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid var(--bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sum-val { font-size: 1.2rem; font-weight: 800; }
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+
+        .actions-fixed {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        #file-import { display: none; }
     </style>
 </head>
+<body>
 
-<body onload="toggleIncomeType()">
-    <h1>Budgetrechner</h1>
+<div class="container">
+    <header>
+        <h1><i class="fa fa-wallet"></i> Smart Budget Pro</h1>
+    </header>
 
-    <div class="section">
+    <div class="storage-bar">
+        <input type="text" id="budget-name" placeholder="Budget Name">
+        <button class="btn btn-primary" onclick="saveBudget()"><i class="fa fa-save"></i> Speichern</button>
+        <select id="budget-list" onchange="loadBudget()">
+            <option value="">Laden...</option>
+        </select>
+        <button class="btn btn-danger" onclick="deleteBudget()"><i class="fa fa-trash"></i></button>
+    </div>
+
+    <div class="card">
         <h2>Einkommen</h2>
-        <div class="input-group">
-            <label for="income-type">Einkommensart:</label>
-            <select id="income-type" onchange="toggleIncomeType()">
+        <div class="income-grid">
+            <select id="income-type" onchange="calculateAll()">
                 <option value="monthly">Monatlich</option>
                 <option value="yearly">Jährlich</option>
             </select>
-        </div>
-        <div class="input-group">
-            <label for="income-amount">Einkommen:</label>
-            <input type="number" id="income-amount" placeholder="CHF">
-        </div>
-        <div class="checkbox-group" id="thirteenth-salary-group" style="display: block;">
-            <label>
-                <input type="checkbox" id="thirteenth-salary">
-                13. Monatslohn
+            <input type="number" id="income-amount" placeholder="Betrag (CHF)" oninput="calculateAll()">
+            <label style="font-size: 13px; cursor:pointer;">
+                <input type="checkbox" id="thirteenth-salary" onchange="calculateAll()"> 13. Lohn
             </label>
         </div>
-        <div class="results">
-            <strong>Monatliches Einkommen:</strong> <span id="monthly-income-display">CHF 0.00</span>
-        </div>
-        <div class="results">
-            <strong>Jährliches Einkommen:</strong> <span id="annual-income-display">CHF 0.00</span>
+        <div style="margin-top: 15px; font-weight: 700; color: var(--text-secondary);">
+            Monatlich verfügbar: <span id="monthly-income-display" class="positive">CHF 0.00</span>
         </div>
     </div>
 
-    <div class="section">
-        <h2>Fixe Kosten</h2>
-        <ul id="fixed-costs-list" class="costs-list"></ul>
-        <button class="add-row" onclick="addFixedCost()">+ Fixe Kosten hinzufügen</button>
+    <div class="card">
+        <h2>Fixkosten 
+            <button class="btn btn-icon" style="border-radius:50%" onclick="addCostRow('fixed-list', true)">+</button>
+        </h2>
+        <div id="fixed-list"></div>
+        <div class="summary-bar">
+            <span>Saldo nach Fixkosten:</span>
+            <span id="remaining-after-fixed" class="sum-val">CHF 0.00</span>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>Variable Kosten</h2>
-        <ul id="variable-costs-list" class="costs-list"></ul>
-        <button class="add-row" onclick="addVariableCost()">+ Variable Kosten hinzufügen</button>
+    <div class="card">
+        <h2>Variable Kosten
+            <button class="btn btn-icon" style="border-radius:50%" onclick="addCostRow('var-list', false)">+</button>
+        </h2>
+        <div id="var-list"></div>
+        <div class="summary-bar">
+            <span>Freies Budget:</span>
+            <span id="remaining-after-variable" class="sum-val">CHF 0.00</span>
+        </div>
     </div>
+</div>
 
-    <div class="section results">
-        <h2>Zwischenstände</h2>
-        <div><strong>Nach Fixkosten:</strong> <span id="remaining-after-fixed" class="positive">CHF 0.00</span></div>
-        <div><strong>Nach Variablen Kosten:</strong> <span id="remaining-after-variable" class="positive">CHF 0.00</span></div>
-    </div>
+<div class="actions-fixed">
+    <button class="btn btn-secondary" onclick="exportPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
+    <button class="btn btn-secondary" onclick="exportCSV()"><i class="fa fa-file-csv"></i> CSV Export</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('file-import').click()"><i class="fa fa-upload"></i> CSV Import</button>
+    <input type="file" id="file-import" accept=".csv" onchange="importCSV(this)">
+</div>
 
-    <script>
-        function toggleIncomeType() {
-            const thirteenthSalaryGroup = document.getElementById("thirteenth-salary-group");
-            const incomeType = document.getElementById("income-type").value;
-            thirteenthSalaryGroup.style.display = incomeType === "monthly" ? "block" : "none";
-            updateIncome();
-        }
+<script>
+    window.onload = refreshBudgetList;
 
-        function updateIncome() {
-            const incomeAmount = parseFloat(document.getElementById("income-amount").value) || 0;
-            const incomeType = document.getElementById("income-type").value;
-            const thirteenthSalary = document.getElementById("thirteenth-salary").checked;
+    function calculateAll() {
+        const amount = parseFloat(document.getElementById("income-amount").value) || 0;
+        const type = document.getElementById("income-type").value;
+        const extra = document.getElementById("thirteenth-salary").checked;
+        
+        let monthlyIncome = (type === "monthly") ? amount : (amount / 12);
+        if (extra && type === "monthly") monthlyIncome = (amount * 13) / 12;
 
-            let monthlyIncome, annualIncome;
-            if (incomeType === "monthly") {
-                monthlyIncome = incomeAmount;
-                annualIncome = thirteenthSalary ? incomeAmount * 13 : incomeAmount * 12;
-            } else {
-                monthlyIncome = incomeAmount / 12;
-                annualIncome = incomeAmount;
-            }
+        document.getElementById("monthly-income-display").textContent = `CHF ${monthlyIncome.toFixed(2)}`;
 
-            document.getElementById("monthly-income-display").textContent = `CHF ${monthlyIncome.toFixed(2)}`;
-            document.getElementById("annual-income-display").textContent = `CHF ${annualIncome.toFixed(2)}`;
-            updateBudget();
-        }
-
-        function addFixedCost() {
-            addCostRow("fixed-costs-list", true);
-        }
-
-        function addVariableCost() {
-            addCostRow("variable-costs-list", false);
-        }
-
-        function addCostRow(listId, isFixedCost) {
-            const list = document.getElementById(listId);
-            const listItem = document.createElement("li");
-
-            const descriptionInput = document.createElement("input");
-            descriptionInput.type = "text";
-            descriptionInput.placeholder = "Beschreibung";
-
-            const amountInput = document.createElement("input");
-            amountInput.type = "number";
-            amountInput.placeholder = "Betrag (CHF)";
-            amountInput.oninput = updateBudget;
-
-            if (isFixedCost) {
-                const frequencySelect = document.createElement("select");
-                frequencySelect.innerHTML = `
-<option value="monthly">Monatlich</option>
-<option value="yearly">Jährlich</option>
-                `;
-                frequencySelect.onchange = updateBudget;
-                listItem.appendChild(frequencySelect);
-            }
-
-            const removeBtn = document.createElement("button");
-            removeBtn.textContent = "X";
-            removeBtn.className = "remove-btn";
-            removeBtn.onclick = () => {
-                list.removeChild(listItem);
-                updateBudget();
-            };
-
-            listItem.appendChild(descriptionInput);
-            listItem.appendChild(amountInput);
-            listItem.appendChild(removeBtn);
-            list.appendChild(listItem);
-        }
-
-        function updateBudget() {
-            const monthlyIncome = parseFloat(document.getElementById("monthly-income-display").textContent.replace("CHF ", "")) || 0;
-
-            const fixedCosts = sumCosts("fixed-costs-list", true);
-            const variableCosts = sumCosts("variable-costs-list", false);
-
-            const remainingAfterFixed = monthlyIncome - fixedCosts;
-            const remainingAfterVariable = remainingAfterFixed - variableCosts;
-
-            displayResult("remaining-after-fixed", remainingAfterFixed);
-            displayResult("remaining-after-variable", remainingAfterVariable);
-        }
-
-        function sumCosts(listId, isFixedCost) {
-            const items = document.getElementById(listId).children;
+        const sumList = (id) => {
             let total = 0;
-            for (let item of items) {
-                const amount = parseFloat(item.querySelector("input[type='number']").value) || 0;
-                if (isFixedCost) {
-                    const frequency = item.querySelector("select").value;
-                    total += frequency === "yearly" ? amount / 12 : amount;
-                } else {
-                    total += amount;
-                }
-            }
+            document.querySelectorAll(`#${id} .cost-item`).forEach(item => {
+                const val = parseFloat(item.querySelector('.amt-input').value) || 0;
+                const freq = item.querySelector('.freq') ? parseFloat(item.querySelector('.freq').value) : 1;
+                total += (val / freq);
+            });
             return total;
+        };
+
+        const fixed = sumList('fixed-list');
+        const variable = sumList('var-list');
+        const resFixed = monthlyIncome - fixed;
+        const resVar = resFixed - variable;
+
+        updateDisplay("remaining-after-fixed", resFixed);
+        updateDisplay("remaining-after-variable", resVar);
+    }
+
+    function updateDisplay(id, val) {
+        const el = document.getElementById(id);
+        el.textContent = `CHF ${val.toFixed(2)}`;
+        el.className = 'sum-val ' + (val < 0 ? "negative" : "positive");
+    }
+
+    function addCostRow(listId, isFixed, data = null) {
+        const list = document.getElementById(listId);
+        const item = document.createElement("div");
+        item.className = "cost-item";
+        
+        item.innerHTML = `
+            <div class="main-row">
+                ${isFixed ? '<select class="freq" onchange="calculateAll()"><option value="1">Monatlich</option><option value="12">Jährlich</option></select>' : ''}
+                <input type="text" class="desc-input" placeholder="Beschreibung" value="${data?.desc || ''}">
+                <input type="number" class="amt-input" placeholder="0.00" value="${data?.amt || ''}" oninput="calculateAll()">
+                <button class="btn btn-icon btn-toggle-sub" title="Unterkategorien" onclick="toggleSubContainer(this)">
+                    <i class="fa ${data?.subs && data.subs.length > 0 ? 'fa-minus' : 'fa-list-ul'}"></i>
+                </button>
+                <button class="btn btn-icon" title="Löschen" onclick="this.closest('.cost-item').remove(); calculateAll();"><i class="fa fa-trash"></i></button>
+            </div>
+            <div class="sub-container ${data?.subs && data.subs.length > 0 ? 'active' : ''}">
+                <div class="sub-rows-target"></div>
+                <button class="btn" style="color:var(--primary); font-size:11px; padding: 5px 0;" onclick="addSubRow(this)">+ Unterkategorie</button>
+            </div>
+        `;
+        list.appendChild(item);
+        
+        if (data?.freq && isFixed) item.querySelector('.freq').value = data.freq;
+        if (data?.subs) {
+            const container = item.querySelector('.sub-container');
+            data.subs.forEach(s => addSubRow(container.querySelector('.btn'), s.desc, s.amt));
         }
+        calculateAll();
+    }
 
-        function displayResult(elementId, value) {
-            const element = document.getElementById(elementId);
-            element.textContent = `CHF ${value.toFixed(2)}`;
-            element.className = value < 0 ? "negative" : "positive";
+    function toggleSubContainer(btn) {
+        const item = btn.closest('.cost-item');
+        const container = item.querySelector('.sub-container');
+        const icon = btn.querySelector('i');
+        
+        if (container.classList.contains('active')) {
+            // Wenn geschlossen wird: Alle Unterzeilen löschen und Bereich verstecken
+            container.querySelector('.sub-rows-target').innerHTML = '';
+            container.classList.remove('active');
+            icon.classList.replace('fa-minus', 'fa-list-ul');
+            updateParentSum(item);
+        } else {
+            // Wenn geöffnet wird: Bereich zeigen und erste Zeile hinzufügen
+            container.classList.add('active');
+            icon.classList.replace('fa-list-ul', 'fa-minus');
+            if (container.querySelector('.sub-rows-target').children.length === 0) {
+                addSubRow(container.querySelector('.btn'));
+            }
         }
+    }
 
-        document.getElementById("income-amount").addEventListener("input", updateIncome);
-        document.getElementById("thirteenth-salary").addEventListener("change", updateIncome);
-        document.getElementById("income-type").addEventListener("change", toggleIncomeType);
-    </script>
+    function addSubRow(btn, desc = '', amt = '') {
+        const target = btn.previousElementSibling;
+        const row = document.createElement("div");
+        row.className = "sub-row";
+        row.innerHTML = `
+            <input type="text" class="desc-input sub-desc" placeholder="Unterpunkt" value="${desc}">
+            <input type="number" class="amt-input sub-amt" placeholder="0.00" value="${amt}" oninput="updateParentSum(this)">
+            <button class="btn btn-del-sub" title="Unterpunkt löschen" onclick="removeSubRow(this)"><i class="fa fa-times"></i></button>
+        `;
+        target.appendChild(row);
+        updateParentSum(row);
+    }
 
+    function removeSubRow(btn) {
+        const item = btn.closest('.cost-item');
+        const target = btn.closest('.sub-rows-target');
+        btn.parentElement.remove();
+        
+        // Wenn keine Unterkategorien mehr da sind, Bereich automatisch schließen
+        if (target.children.length === 0) {
+            const container = item.querySelector('.sub-container');
+            const toggleBtnIcon = item.querySelector('.btn-toggle-sub i');
+            container.classList.remove('active');
+            toggleBtnIcon.classList.replace('fa-minus', 'fa-list-ul');
+        }
+        
+        updateParentSum(item);
+    }
 
-</body></html>
+    function updateParentSum(elementOrItem) {
+        const item = elementOrItem.closest ? elementOrItem.closest('.cost-item') : elementOrItem;
+        const mainInput = item.querySelector('.main-row .amt-input');
+        const subContainer = item.querySelector('.sub-container');
+        const subAmounts = item.querySelectorAll('.sub-amt');
+        
+        let total = 0;
+        subAmounts.forEach(input => total += parseFloat(input.value) || 0);
+        
+        // Logik: Nur wenn der Container AKTIV ist und Kinder hat, wird gesperrt
+        if (subContainer.classList.contains('active') && subAmounts.length > 0) {
+            mainInput.value = total > 0 ? total.toFixed(2) : "";
+            mainInput.readOnly = true;
+            mainInput.style.background = "#f0f0f2";
+        } else {
+            mainInput.readOnly = false;
+            mainInput.style.background = "";
+            // Wir löschen den Wert nicht, falls der User ihn manuell gesetzt hat
+        }
+        calculateAll();
+    }
+
+    // --- Storage Logic ---
+    function getBudgetData() {
+        const extract = (id) => Array.from(document.querySelectorAll(`#${id} .cost-item`)).map(item => ({
+            desc: item.querySelector('.desc-input').value,
+            amt: item.querySelector('.amt-input').value,
+            freq: item.querySelector('.freq')?.value || 1,
+            subs: Array.from(item.querySelectorAll('.sub-row')).map(s => ({
+                desc: s.querySelector('.sub-desc').value,
+                amt: s.querySelector('.sub-amt').value
+            }))
+        }));
+        return {
+            income: document.getElementById('income-amount').value,
+            incomeType: document.getElementById('income-type').value,
+            extra: document.getElementById('thirteenth-salary').checked,
+            fixed: extract('fixed-list'),
+            variable: extract('var-list')
+        };
+    }
+
+    function saveBudget() {
+        const name = document.getElementById('budget-name').value;
+        if (!name) return alert("Bitte Budget-Namen eingeben!");
+        const budgets = JSON.parse(localStorage.getItem('smart_budgets') || '{}');
+        budgets[name] = getBudgetData();
+        localStorage.setItem('smart_budgets', JSON.stringify(budgets));
+        refreshBudgetList();
+        alert("Budget gespeichert!");
+    }
+
+    function loadBudget() {
+        const name = document.getElementById('budget-list').value;
+        if (!name) return;
+        const budgets = JSON.parse(localStorage.getItem('smart_budgets') || '{}');
+        const data = budgets[name];
+        document.getElementById('budget-name').value = name;
+        document.getElementById('income-amount').value = data.income;
+        document.getElementById('income-type').value = data.incomeType;
+        document.getElementById('thirteenth-salary').checked = data.extra;
+        document.getElementById('fixed-list').innerHTML = '';
+        document.getElementById('var-list').innerHTML = '';
+        data.fixed.forEach(d => addCostRow('fixed-list', true, d));
+        data.variable.forEach(d => addCostRow('var-list', false, d));
+        calculateAll();
+    }
+
+    function deleteBudget() {
+        const name = document.getElementById('budget-list').value;
+        if (!name || !confirm("Dieses Budget endgültig löschen?")) return;
+        const budgets = JSON.parse(localStorage.getItem('smart_budgets') || '{}');
+        delete budgets[name];
+        localStorage.setItem('smart_budgets', JSON.stringify(budgets));
+        refreshBudgetList();
+        document.getElementById('budget-name').value = "";
+    }
+
+    function refreshBudgetList() {
+        const select = document.getElementById('budget-list');
+        const budgets = JSON.parse(localStorage.getItem('smart_budgets') || '{}');
+        select.innerHTML = '<option value="">Gespeicherte Budgets...</option>';
+        Object.keys(budgets).forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = opt.textContent = name;
+            select.appendChild(opt);
+        });
+    }
+
+    function exportCSV() {
+        const data = getBudgetData();
+        let csv = "Typ;Beschreibung;Betrag;Frequenz\n";
+        csv += `Einkommen;Total;${data.income};${data.incomeType}\n`;
+        data.fixed.forEach(f => csv += `Fixkosten;${f.desc};${f.amt};${f.freq}\n`);
+        data.variable.forEach(v => csv += `Variable;${v.desc};${v.amt};1\n`);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Budget_${document.getElementById('budget-name').value || 'Export'}.csv`;
+        link.click();
+    }
+
+    function importCSV(input) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const lines = e.target.result.split('\n');
+            document.getElementById('fixed-list').innerHTML = '';
+            document.getElementById('var-list').innerHTML = '';
+            lines.slice(1).forEach(line => {
+                if(!line.trim()) return;
+                const [type, desc, amt, freq] = line.split(';');
+                if (type === "Einkommen") {
+                    document.getElementById('income-amount').value = amt;
+                    document.getElementById('income-type').value = freq;
+                } else if (type === "Fixkosten") {
+                    addCostRow('fixed-list', true, {desc, amt, freq});
+                } else if (type === "Variable") {
+                    addCostRow('var-list', false, {desc, amt});
+                }
+            });
+            calculateAll();
+        };
+        reader.readAsText(file);
+    }
+
+    function exportPDF() {
+        const { jsPDF } = window;
+        const doc = new jsPDF();
+        const name = document.getElementById('budget-name').value || 'Budget Plan';
+        doc.setFontSize(18);
+        doc.text(name, 14, 20);
+        const rows = [];
+        const inc = document.getElementById('monthly-income-display').textContent;
+        rows.push([{content: 'Monatliches Netto-Einkommen', styles: {fillColor: [230, 230, 230], fontStyle: 'bold'}}, inc]);
+        document.querySelectorAll('.cost-item').forEach(item => {
+            const desc = item.querySelector('.desc-input').value || 'Unbenannt';
+            const amt = item.querySelector('.amt-input').value || '0';
+            const freq = item.querySelector('.freq')?.value === "12" ? " (Jährl.)" : "";
+            rows.push([desc + freq, `CHF ${parseFloat(amt).toFixed(2)}`]);
+        });
+        rows.push([{content: 'Verfügbares Restbudget', styles: {fillColor: [52, 199, 89], textColor: 255, fontStyle: 'bold'}}, 
+                   document.getElementById('remaining-after-variable').textContent]);
+        doc.autoTable({ startY: 30, head: [['Posten', 'Betrag']], body: rows });
+        doc.save(`${name}.pdf`);
+    }
+</script>
+</body>
+</html>
